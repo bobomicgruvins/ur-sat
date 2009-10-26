@@ -7,7 +7,7 @@
 
 %% 
 
-new(PS,Learnt) ->
+new(S,PS,Learnt) ->
     if 
 	Learnt ->
 	    Set = sets:from_list(PS),		%remove dupes

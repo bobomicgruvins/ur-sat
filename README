@@ -5,7 +5,38 @@ of the constraint type. The client must call the function
 register_constraint_type(module_name). The solver framework will load
 the module. The module must implement the following functions:
 
-* new(solver_state, &args) create and return a new instance of the constraint. 
+* new(solver_state, args): create and return a new instance of the
+  constraint. args may be a tuple or list of any arguments necessary
+  for the initialization of this constraint type. Add the constraint
+  to any appropriate watcher lists. enque any unit information. return
+  {ok, constraint} on success, {conflict, constraint} on conflict
+  detection.
+
+* remove(solver_state, constraint): Remove the constraint from any
+  watcher lists. Destroy the constraint. Return atom 'ok' on success,
+  atom 'fail' on failure.
+
+* propogate(solver_state, constraint, p = literal): Called if the
+  constraint is found in a watcher list during propogation of the
+  literal 'p'. Must remove the constraint from that list and insert
+  itself into a new or the same watcher list. Enque any unit
+  information derivable from literal 'p'. Return atom 'ok' on success,
+  atom 'conflict' on conflict. The constraint is allowed to add itself
+  to the undo list for 'p' if it must be updated when 'p' becomes
+  unbound.
+
+* simplify(solver_state, constraint): only called at the top level
+  with an empty propogation queue. WARNING I DO NOT GET THIS, I NEED
+  TO READ PG 8 IN MINISAT SOME MORE BEFORE I CAN FULLY SPECIFY THE
+  BEHAVIOUR OF THIS FUNCTION
+
+* undo(solver_state, constraint, ): 
+
+To add a constraint type to the solver, drop constraintname.erl into
+the er-sat directory and compile it with erlc. Then, do the initial
+add of constraints of this type with the
+add_constraints(Type,ArgBundles) function. 
+
 
 Notes:
 

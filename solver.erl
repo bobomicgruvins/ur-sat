@@ -1,6 +1,7 @@
 -module(solver).
+-export([add_constraints/2]).
 
--record(solver_state,
+-record(solver,
 	{constraintDB,
 	 variableOrder,
 	 propogation,
@@ -47,5 +48,33 @@
 	 root_level}).				% unsure what this one does
 
 
-init_solver()->
+init_solver(S,Constraints)->
+    S = #solver,
+    init_solver(add_constraints(clause,ArgBundles,S)).
+
+ 
+add_constraints(Type, ArgBundles,S) ->
+    AddConstraint = fun(ArgBundle,S) ->
+			    {ok, Constraint} = Type:new(S,X),
+			    OldWatches = S#solver.watches,
+			    NewWatches = 
+			    S_next = S#solver{watches = NewWatches}
+		    
     
+    lists:foldl(AddConstraint,S,ArgBundles),
+
+
+    
+    
+    
+
+
+
+
+%%  21:24 < valross> mogglefrange, code:ensure_loaded(modulename)  ?
+%%  21:24 < yrashk> mogglefrange: see erl -man code
+    
+
+
+
+ 
