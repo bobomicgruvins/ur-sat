@@ -1,0 +1,30 @@
+Usage:
+
+To define a constraint type, a client defines a module with the name
+of the constraint type. The client must call the function
+register_constraint_type(module_name). The solver framework will load
+the module. The module must implement the following functions:
+
+* new(solver_state, &args) create and return a new instance of the constraint. 
+
+Notes:
+
+
+Watched literals:
+
+
+When we apply unit propagation we don't want to visit every clause
+(this is slow). Instead we want to only visit a clause when we know it
+is a unit clause ie. It contains one unassigned variable and all other
+variables are false. We could track how many unassigned variables
+exist in each clause and then visit each clause when it has only one
+unassigned variable. To do this we could keep a counter of the number
+of assigned variables in each clause and then visit the clause when
+the counter reaches 1. There is a better way to do this however, we
+choose two unassigned variables in each clause and "watch" them. Then
+any given clause cannot be a unit clause if it has two watched
+literals and as such we must only visit a clause when one of the two
+watched literals becomes assigned. When a watched literal becomes
+assigned visit the clause containing that literal and check to see if
+the clause is a unit clause, if it is assign the remaining literal, if
+it is not choose a new unassigned literal to watch.

@@ -7,7 +7,7 @@
 
 %% 
 
-newClause(PS,Learnt) ->
+new(PS,Learnt) ->
     if 
 	Learnt ->
 	    Set = sets:from_list(PS),		%remove dupes
