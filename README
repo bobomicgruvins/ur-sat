@@ -5,7 +5,7 @@ of the constraint type. The client must call the function
 register_constraint_type(module_name). The solver framework will load
 the module. The module must implement the following functions:
 
-* new(solver_state, args): create and return a new instance of the
+* new(solver_state, ArgBundle): create and return a new instance of the
   constraint. args may be a tuple or list of any arguments necessary
   for the initialization of this constraint type. Add the constraint
   to any appropriate watcher lists. enque any unit information. return
