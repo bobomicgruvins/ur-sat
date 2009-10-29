@@ -23,14 +23,14 @@ new(S,ArgBundle) ->
 	    %% assignment of all variables, return TRUE and don't
 	    %% bother adding it to the clause DB
 
-	    Set = sets:from_list(PS),		%remove dupes: the "set" datatype doesn't allow duplicates
+	    Set = sets:from_list(PS),		
+	    
+	    %%remove dupes: the "set" datatype doesn't allow duplicates
 	    
 	    %remove all literals which are just the literal "FALSE"
 	    %from the clause
 
     end,
-    
-    LitCount = length(Literals),
     
     TaggedLiterals = lists:map(fun(L) -> L#lit_rec{id=make_ref(),clause=ClauseID} end, Literals),
 
