@@ -52,8 +52,8 @@ token_maker(List, Buildlist)->
 
 parseLines(Lines) ->   
 
-    lists:map(fun(X) -> string:tokens(X, "\s") end,Lines),
-    
+    TokenLists = lists:map(fun(X) -> string:tokens(X, "\s") end,Lines),
+    CommentsGone = lists:filter(fun(X) -> [H|T] = X, not("c" == H) end,TokenLists), 
     lists:map(fun(X) ->
-		      lists:map(fun(Y) -> {I,_} = string:to_integer(Y), I end, X) end, Lines).
+		      lists:map(fun(Y) -> {I,_} = string:to_integer(Y), I end, X) end, CommentsGone).
 				    
