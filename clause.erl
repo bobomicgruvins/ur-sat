@@ -8,13 +8,36 @@
 %% 
 
 new(S,ArgBundle) ->
+    {Literals, Learnt} = ArgBundle,
+    Watches = S#solver.watches,
+    ClauseID = make_ref(),
 
     if 
-	Learnt ->
-	    Set = sets:from_list(PS),		%remove dupes
-	    CleanedSet = sets:filter(is_false,Set)
-    end,
+	not(Learnt) ->
+	    %%if any of the literals is just the "true" literal,
+	    %%return TRUE and don't bother adding this clause to the
+	    %%constraintDB
 
-    OldWatches = S#solver.watches,
-    NewWatches = [|OldWatches]
-	S_next = S#solver{watches = NewWatches}
+	    %% if the literals p and not(p) occur in the clause, then
+	    %% it is obvious that the clause is satisfiable under ANY
+	    %% assignment of all variables, return TRUE and don't
+	    %% bother adding it to the clause DB
+
+	    Set = sets:from_list(PS),		%remove dupes: the "set" datatype doesn't allow duplicates
+	    
+	    %remove all literals which are just the literal "FALSE"
+	    %from the clause
+
+    end,
+    
+    LitCount = length(Literals),
+    
+    TaggedLiterals = lists:map(fun(L) -> L#lit_rec{id=make_ref(),clause=ClauseID} end, Literals),
+
+    lists:map(fun(X) -> ets:insert(Watches,{X#lit.id,[]}) end, IdentifiedLiterals),
+
+    {ClauseID, NewClause}.			
+			
+			
+    
+%% to use make_ref or not to use make-ref?

@@ -62,11 +62,15 @@ init_solver(S,Constraints)->
     init_solver(add_constraints(clause,ArgBundles,S)).
 
  
-add_constraints(Type, ArgBundles,S) ->
+add_constraints(Type, ArgBundles,S#solver{Watches = watches, Constraints = constraints}) ->
+
     AddConstraint = fun(ArgBundle,S) ->
 			    {ok, Constraint,S} = Type:new(S,X) end,
 
     lists:foldl(AddConstraint,S,ArgBundles),
+    
+    lists:map(fun(ArgBundle) -> ets:insert(Constraints,Type:new(S,ArgBundle)), ArgBundles).
+		       
 
 
     
