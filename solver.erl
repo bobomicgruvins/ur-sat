@@ -1,6 +1,6 @@
 -module(solver).
--export([add_constraints/2]).
-
+%%-export([add_constraints/2]).
+-compile(export_all).
 -record(solver,
 	{constraintDB,
 	 variableOrder,

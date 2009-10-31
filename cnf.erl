@@ -34,7 +34,7 @@ listToLits(List) ->
     lists:map(fun(X) -> #lit{variable=abs(X),sign=positivep(X)} end, List).
 
 clausesToArgs(Lists) ->
-    lists:map(fun(X) -> listToLits(X) end, Lists).
+    lists:map(listToLits/1, Lists).
 
 positivep(N) when N >= 0 ->
     true;

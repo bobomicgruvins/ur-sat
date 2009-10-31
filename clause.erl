@@ -16,7 +16,7 @@ new(S,ArgBundle) ->
 	not(Learnt) ->
 	    %%if any of the literals is just the "true" literal,
 	    %%return TRUE and don't bother adding this clause to the
-	    %%constraintDB
+	    %%constraintDB: it can be satisfied by any assignment
 
 	    %% if the literals p and not(p) occur in the clause, then
 	    %% it is obvious that the clause is satisfiable under ANY
