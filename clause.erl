@@ -32,7 +32,7 @@ new(S,ArgBundle) ->
 
     end,
     
-    TaggedLiterals = lists:map(fun(L) -> L#lit_rec{id=make_ref(),clause=ClauseID} end, Literals),
+    TaggedLiterals = lists:map(fun(L) -> L#lit{id=make_ref(),clause=ClauseID} end, Literals),
 
     lists:map(fun(X) -> ets:insert(Watches,{X#lit.id,[]}) end, IdentifiedLiterals),
 
