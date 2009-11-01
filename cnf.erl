@@ -1,10 +1,6 @@
 -module(cnf).
 -compile(export_all).
-
--record(lit,
-	{sign=true,
-	 variable=0,
-	 id=0}).
+-include_lib("records.hrl").
 
 readLines(File) ->
     {ok, Rest} = file:read_file(File),
@@ -34,7 +30,7 @@ listToLits(List) ->
     lists:map(fun(X) -> #lit{variable=abs(X),sign=positivep(X)} end, List).
 
 clausesToArgs(Lists) ->
-    lists:map(listToLits/1, Lists).
+    lists:map(fun listToLits/1, Lists).
 
 positivep(N) when N >= 0 ->
     true;
@@ -44,4 +40,5 @@ positivep(N) when N < 0 ->
 parseCNF(File) ->
     Lines = readLines(File),
     {Problem, Clauses} = linesToLists(Lines),
-    clausesToArgs(Clauses).
+    LitsList = clausesToArgs(Clauses),
+    {1, 5, LitsList}.
