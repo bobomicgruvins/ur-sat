@@ -2,6 +2,19 @@
 -compile(export_all).
 -include_lib("records.hrl").
 
+%% Private Functions:
+%% search(Conflict,Solver)
+search(true,S) ->
+    
+
+
+propogate(#solver{propQ = PropQ} = S) ->
+    %% Returns either no_conflict, or a conflict clause
+    case queue:is_empty(PropQ) of
+	false -> Literal = queue:out(PropQ),
+		 Watches = get_watches(Literal),
+		 process
+	    
 
 
 %% Public Interface:
@@ -14,8 +27,8 @@ new() ->
 add_constraints(Type, ArgBundles, #solver{constraints = Constraints} = S) ->
     code:ensure_loaded(Type),
     lists:map(fun(ArgBundle) -> 
-		      {clause, ConstraintID, Constraint} = Type:new(S, ArgBundle),
-		      ets:insert(Constraints, {ConstraintID, Constraint}) end, 
+		      {Type, ConstraintID, Constraint} = Type:new(S, ArgBundle),
+		      ets:insert(Constraints, {ConstraintID, {Type, Constraint}}) end, 
 	      ArgBundles).
 
 add_watch(Literal, Constraint, #solver{watches = Watches} = S) ->

@@ -62,6 +62,15 @@ remove_dupes(Literals) ->
 
 remove_false_constants(Literals) ->
     lists:filter(fun(X) -> X#lit.variable == false end, Literals).
+
+
+%% The Propogate machienary
+
+propogate(#clause{literals = Literals} = Clause, Literal, S) ->
+    
+    
+
+
 			 
     
 %% to use make_ref or not to use make-ref?

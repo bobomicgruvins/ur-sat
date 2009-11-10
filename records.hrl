@@ -65,4 +65,5 @@
 	{literals = [],
 	 activity = 0,
 	 id = 0,
+	 type = false,
 	 learnt = false}).
