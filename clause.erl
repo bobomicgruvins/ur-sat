@@ -68,9 +68,4 @@ remove_false_constants(Literals) ->
 
 propogate(#clause{literals = Literals} = Clause, Literal, S) ->
     
-    
-
-
-			 
-    
 %% to use make_ref or not to use make-ref?
