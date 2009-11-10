@@ -3,15 +3,18 @@
 -include_lib("records.hrl").
 						
 new(S, {Literals, false}) ->
-    insert_clause(Literals, false, S).
+    case normalize(Literals) of
+	trivial_success -> trivial_success;
+	{literals, NormalizedLiterals} -> insert_clause(NormalizedLiterals, false, S)
+    end.
 
 new(S, {Literals, true}) ->
     ReOrderedLits = pick_watch(Literals),
     %% use a heuristic to pick a second literal to watch
-    insert_clause(normalize(ReOrderedLits), true, S).
+    insert_clause(ReOrderedLits, true, S).
 
 insert_clause(Literals, Learnt, S) when length(Literals) == 0 ->
-    false;
+    conflict;
 insert_clause(Literals, Learnt, S) when length(Literals) == 1 ->
     solver:enqueue(array:get(0,Literals),S);
 insert_clause(Literals, Learnt, #solver{watches = Watches} = S) ->
@@ -21,14 +24,34 @@ insert_clause(Literals, Learnt, #solver{watches = Watches} = S) ->
     NewClause = #clause{id = ClauseID, literals = TaggedLiterals},
     {clause, ClauseID, NewClause}.
 
+%replace the direct ets call with a call to solver:addwatch(Solver,Literal,Constraint)
+
+add_watch(Literal, Constraint, #solver{watches = Watches} = S) ->
+    %% need to get current value of watches:literalID
+    
+    case ets:lookup(Watches,Literal#lit.id) of
+	
+
+    ets:insert(Watches, {X#lit.id,[]}
+
 pick_watch(Literals) ->
     %% return a re-ordering of literals according to some heuristic.
+
+true_check(Literals) ->
+    lists:any(fun(X) -> 
+		      
 
 normalize(Literals) ->
     %%if any of the literals is just the "true" literal,
     %%return TRUE and don't bother adding this clause to the
     %%constraintDB: it can be satisfied by any assignment
     %% use lists:any. 
+    Literals = case true_check(Literals) or parity_check(literals) of
+		   true -> trivial_success;
+		   false -> %remove dupes, remove false literals
+	       end,
+    
+    
     
     %% if the literals p and not(p) occur in the clause, then
     %% it is obvious that the clause is satisfiable under ANY

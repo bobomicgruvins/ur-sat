@@ -1,0 +1,34 @@
+* Constraint API
+  
+** The "new" function
+
+   The new function takes a "solver" reference, and a bundle of
+   arguments. The user may specify the internal structure of the
+   bundle of arguments.
+
+   The "new" function must use the solver interface to add the
+   constraint to the watch or undo list in the solver.
+   
+   It must return one of the following values:
+
+   - The atom "conflict," in the case of a top-level conflict in the
+     constraint.
+
+   - The atom "trivial_success," if some some reason the constraint
+     does not need to be added to the constraint database in the
+     solver.
+
+   - A tuple of the form: {type, ID, Representation}
+     where:
+     - type :: the name of the constraint's module
+     - ID :: a unique ID for the constraint database
+     - Representation :: user-specified representation of the
+                         constraint generated from these arguments
+
+* Solver API
+
+** add_watch(Solver, Literal, Constraint)
+   
+   Called by anything that needs to add a Constraint to the watchlist
+   of a Literal. The Constraint and Literal must both be "tagged" with
+   a unique ID, otherwise the function will error and halt execution.
