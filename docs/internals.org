@@ -1,6 +1,7 @@
 * Constraint API
   
-** The "new" function
+** new(Solver, ArgBundle) 
+   -> conflict || trivial_success ||  {type, ID, Representation}
 
    The new function takes a "solver" reference, and a bundle of
    arguments. The user may specify the internal structure of the
@@ -26,9 +27,10 @@
                          constraint generated from these arguments
 
 * Solver API
-
-** add_watch(Solver, Literal, Constraint)
-   
-   Called by anything that needs to add a Constraint to the watchlist
-   of a Literal. The Constraint and Literal must both be "tagged" with
-   a unique ID, otherwise the function will error and halt execution.
+** Public
+*** add_watch(Solver, Literal, Constraint)
+    -> 
+    
+    Called by anything that needs to add a Constraint to the watchlist
+    of a Literal. The Constraint and Literal must both be "tagged" with
+    a unique ID, otherwise the function will error and halt execution.

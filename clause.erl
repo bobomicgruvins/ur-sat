@@ -6,8 +6,7 @@ new(S, {Literals, false}) ->
     case normalize(Literals) of
 	trivial_success -> trivial_success;
 	{literals, NormalizedLiterals} -> insert_clause(NormalizedLiterals, false, S)
-    end.
-
+    end;
 new(S, {Literals, true}) ->
     ReOrderedLits = pick_watch(Literals),
     %% use a heuristic to pick a second literal to watch
@@ -16,56 +15,53 @@ new(S, {Literals, true}) ->
 insert_clause(Literals, Learnt, S) when length(Literals) == 0 ->
     conflict;
 insert_clause(Literals, Learnt, S) when length(Literals) == 1 ->
-    solver:enqueue(array:get(0,Literals),S);
-insert_clause(Literals, Learnt, #solver{watches = Watches} = S) ->
+    solver:enqueue(lists:nth(0,Literals),S);
+insert_clause(Literals, Learnt, S) ->
     ClauseID = make_ref(),
     TaggedLiterals = lists:map(fun(L) -> L#lit{id=make_ref(),clause=ClauseID} end, Literals), 
-    lists:map(fun(X) -> ets:insert(Watches,{X#lit.id,[]}) end, TaggedLiterals),
-    NewClause = #clause{id = ClauseID, literals = TaggedLiterals},
+    NewClause = #clause{id = ClauseID, literals = array:from_list(TaggedLiterals)},
+
+    case Learnt of 
+	true -> solver:bumpClause(NewClause,S),
+		solver:bumpVarsOf(TaggedLiterals,S);
+	false -> nevermind
+    end,
+
+    solver:add_watch(array:get(0,NewClause#clause.literals),NewClause,S),
+    solver:add_watch(array:get(1,NewClause#clause.literals),NewClause,S),
     {clause, ClauseID, NewClause}.
-
-%replace the direct ets call with a call to solver:addwatch(Solver,Literal,Constraint)
-
-add_watch(Literal, Constraint, #solver{watches = Watches} = S) ->
-    %% need to get current value of watches:literalID
-    
-    case ets:lookup(Watches,Literal#lit.id) of
-	
-
-    ets:insert(Watches, {X#lit.id,[]}
 
 pick_watch(Literals) ->
     %% return a re-ordering of literals according to some heuristic.
-
-true_check(Literals) ->
-    lists:any(fun(X) -> 
-		      
+    %% TODO: obviously, we don't do much here right now. implement
+    %% this later
+    Literals.
 
 normalize(Literals) ->
-    %%if any of the literals is just the "true" literal,
-    %%return TRUE and don't bother adding this clause to the
-    %%constraintDB: it can be satisfied by any assignment
-    %% use lists:any. 
-    Literals = case true_check(Literals) or parity_check(literals) of
-		   true -> trivial_success;
-		   false -> %remove dupes, remove false literals
-	       end,
-    
-    
-    
+    case true_check(Literals) or parity_check(literals) of
+	true -> trivial_success;
+	false -> remove_dupes(remove_false_constants(Literals))
+    end.
+
+true_check(Literals) ->
+    %%if any of the literals is just the "true" literal, return
+    %%trivial_success: the clause can be satisfied by any assignment.
+    lists:any(fun(X) -> X#lit.variable == true end, Literals).
+
+parity_check(Literals) ->		      
     %% if the literals p and not(p) occur in the clause, then
     %% it is obvious that the clause is satisfiable under ANY
-    %% assignment of all variables, return TRUE and don't
-    %% bother adding it to the clause DB. lists:partition into
-    %% true and false signed literals, then take the powerset
-    %% using a list comprehension. test those tuples for the
-    %% same underlying variable using lists:any
+    %% assignment of all variables.
+    {NegativeLits, PositiveLits} = lists:partition(fun(X) -> X#lit.sign == false end, Literals),
+    CrossProduct = [ {X,Y} || X<-NegativeLits, Y<-PositiveLits],
+    list:any(fun({A,B}) -> A#lit.variable == A#lit.variable end, CrossProduct).    
     
-    Set = sets:from_list(Literals).
+remove_dupes(Literals) ->
+    %%the "set" datatype doesn't allow duplicates
+    sets:to_list(sets:from_list(Literals)).
 
-    %%remove dupes: the "set" datatype doesn't allow duplicates
-
-    %%remove all literals which are just the literal "FALSE"
-    %%from the clause
+remove_false_constants(Literals) ->
+    lists:filter(fun(X) -> X#lit.variable == false end, Literals).
+			 
     
 %% to use make_ref or not to use make-ref?

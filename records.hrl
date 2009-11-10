@@ -57,6 +57,10 @@
 	 variable = 0,
 	 id = 0}).
 
+%% NOTE: If a literal is simply the "true," or "false" literal, the
+%% "variable" field of a literal record is the boolean value "true" or
+%% "false", not a reference to any variable.
+
 -record(clause,
 	{literals = [],
 	 activity = 0,
