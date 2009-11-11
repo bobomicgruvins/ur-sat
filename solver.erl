@@ -27,25 +27,29 @@ new(VarCount, ClauseCount) ->
 	    reason = array:new(VarCount,[]),
 	    propQ = queue:new()}.
 
+make_constraint(Type, S, ArgBundle) ->
+    {Type, Constraint} = Type:new(S, ArgBundle),
+    Constraint.
+
 add_constraints(Type, ArgBundles, #solver{constraints = Constraints} = S) ->
     code:ensure_loaded(Type),
-    lists:map(fun(ArgBundle) -> 
-		      {Type, ConstraintID, Constraint} = Type:new(S, ArgBundle),
-		      ets:insert(Constraints, {ConstraintID, {Type, Constraint}}) end, 
-	      ArgBundles).
+    NewConstraints = array:map(fun(I, B) -> make_constraint(Type, S, B) end, ArgBundles),
+    S#solver{constraints = NewConstraints}.
 
-S#solver{constraints = array:map(fun(ArgBundle) ->
-					 {Type, ConstraintID, Constraint} = Type:new(S, ArgBundle),
-					 
+
+
+%%:make_constraint/3,
+%% S#solver{constraints = array:map(fun(ArgBundle) ->
+%% 					     {Type, Constraint} = Type:new(S, ArgBundle),
+%% 					     Constraint end, 
+%% 				     ArgBundles)}.
  
-
-
 add_watch(L, Constraint, #solver{watches = Watches} = S) ->
     LitID = literal:id(L),
     %% need to get current value of watches:literalID
     case ets:lookup(Watches,LitID) of
 	[] -> ets:insert(Watches,{LitID,[Constraint]});
-	CurrentWatches ->ets:insert(Watches,{LitID,[Constraint|CurrentWatches]})
+	CurrentWatches -> ets:insert(Watches,{LitID,[Constraint|CurrentWatches]})
     end.
 
 enqueue(L, FromClause, S) ->

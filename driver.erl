@@ -4,8 +4,8 @@
 %% Use this module to call any parsing functions and start the solver.
 
 run_solver(File) ->
-    {VarCount, ClauseCount, LitList} = cnf:parseCNF(File),
-    S = solver:new(),
+    {VarCount, ClauseCount, LitLists} = cnf:parseCNF(File),
+    S = solver:new(VarCount, ClauseCount),
     Clauses = [{LiteralList, false} || LiteralList <- LitLists],
-    solver:add_constraints(clause, lists:to_array(Clauses), S),
+    solver:add_constraints(clause, array:from_list(Clauses), S),
     S.

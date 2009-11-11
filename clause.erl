@@ -5,7 +5,8 @@
 new(S, {Literals, false}) ->
     case normalize(Literals) of
 	trivial_success -> trivial_success;
-	{literals, NormalizedLiterals} -> insert_clause(NormalizedLiterals, false, S)
+	{literals, NormalizedLiterals} -> insert_clause(NormalizedLiterals, false, S);
+	[] -> lolwut
     end;
 new(S, {Literals, true}) ->
     ReOrderedLits = pick_watch(Literals),
@@ -29,7 +30,7 @@ insert_clause(Literals, Learnt, S) ->
 
     solver:add_watch(literal:negate(array:get(0,NewClause#clause.literals)),NewClause,S),
     solver:add_watch(literal:negate(array:get(1,NewClause#clause.literals)),NewClause,S),
-    {clause, ClauseID, NewClause}.
+    {clause, NewClause}.
 
 pick_watch(Literals) ->
     %% return a re-ordering of literals according to some heuristic.
@@ -38,30 +39,16 @@ pick_watch(Literals) ->
     Literals.
 
 normalize(Literals) ->
-    case true_check(Literals) or parity_check(literals) of
+    case literal:true_check(Literals) or literal:parity_check(Literals) of
 	true -> trivial_success;
-	false -> remove_dupes(remove_false_constants(Literals))
+	false -> remove_dupes(literal:remove_false_constants(Literals))
     end.
-
-true_check(Literals) ->
-    %%if any of the literals is just the "true" literal, return
-    %%trivial_success: the clause can be satisfied by any assignment.
-    lists:any(fun(X) -> X#lit.variable == true end, Literals).
-
-parity_check(Literals) ->		      
-    %% if the literals p and not(p) occur in the clause, then
-    %% it is obvious that the clause is satisfiable under ANY
-    %% assignment of all variables.
-    {NegativeLits, PositiveLits} = lists:partition(fun(X) -> X#lit.sign == false end, Literals),
-    CrossProduct = [ {X,Y} || X<-NegativeLits, Y<-PositiveLits],
-    list:any(fun({A,B}) -> A#lit.variable == A#lit.variable end, CrossProduct).    
     
 remove_dupes(Literals) ->
     %%the "set" datatype doesn't allow duplicates
     sets:to_list(sets:from_list(Literals)).
 
-remove_false_constants(Literals) ->
-    lists:filter(fun(X) -> X#lit.variable == false end, Literals).
+
 
 
 %% The Propogate machienary

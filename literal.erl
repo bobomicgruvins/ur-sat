@@ -37,5 +37,18 @@ negate(L) ->
 id(L) ->
     L#lit.id.
 
-    
+true_check(Literals) ->
+    %%if any of the literals is just the "true" literal, return
+    %%trivial_success: the clause can be satisfied by any assignment.
+    lists:any(fun(X) -> X#lit.variable == true end, Literals).
 
+parity_check(Literals) ->		      
+    %% if the literals p and not(p) occur in the clause, then
+    %% it is obvious that the clause is satisfiable under ANY
+    %% assignment of all variables.
+    {NegativeLits, PositiveLits} = lists:partition(fun(X) -> X#lit.signed end, Literals),
+    CrossProduct = [ {X,Y} || X<-NegativeLits, Y<-PositiveLits],
+    lists:any(fun({A,B}) -> A#lit.variable == B#lit.variable end, CrossProduct). 
+
+remove_false_constants(Literals) ->
+    lists:filter(fun(X) -> X#lit.variable == false end, Literals).

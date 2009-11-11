@@ -47,8 +47,11 @@ positivep(N) when N < 0 ->
 parseCNF(File) ->
     Lines = readLines(File),
     {Problem, ClauseLists} = linesToLists(Lines),
+    [["p", "cnf", VarCount_temp, ClauseCount_temp]] = string:tokens(Problem, "\s"),
+    {VarCount, _} = string:to_integer(VarCount_temp),
+    {ClauseCount, _} = string:to_integer(ClauseCount_temp),	
     LiteralTuplesByClause = lists:map(fun prepare_literal_values/1, ClauseLists),
     LiteralsByClause = lists:map(
 			 fun(X) -> lists:map(fun literal:new/1, X) end, 
 			 LiteralTuplesByClause),
-    {1, 5, LiteralsByClause}.
+    {VarCount, ClauseCount, LiteralsByClause}.
