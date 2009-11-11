@@ -1,5 +1,7 @@
 -record(solver,
 	{constraints,
+	 reason,
+	 trail,
 	 variableOrder = false,
 	 propogation = false,
 	 assignments = false,
@@ -11,7 +13,9 @@
 	 %% array(array(constraint)): for each variable 'x', a list of constraints that need to be
 	 %% updated when 'x' becomes unbound in backtracking 
 	 %% --------------------------------------------------
-	 propQ = false}).
+	 decision_level = 0,
+	 var_dlevels,
+	 propQ}).
          %% queue: propogation queue
 
 -record(constraint_data_base,

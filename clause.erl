@@ -18,17 +18,17 @@ insert_clause(Literals, Learnt, S) when length(Literals) == 1 ->
     solver:enqueue(lists:nth(0,Literals),S);
 insert_clause(Literals, Learnt, S) ->
     ClauseID = make_ref(),
-    TaggedLiterals = lists:map(fun(L) -> L#lit{id=make_ref(),clause=ClauseID} end, Literals), 
-    NewClause = #clause{id = ClauseID, literals = array:from_list(TaggedLiterals)},
+    %%    TaggedLiterals = lists:map(fun(L) -> L#lit{id=make_ref(),clause=ClauseID} end, Literals), 
+    NewClause = #clause{id = ClauseID, literals = array:from_list(Literals)},
 
     case Learnt of 
 	true -> solver:bumpClause(NewClause,S),
-		solver:bumpVarsOf(TaggedLiterals,S);
+		solver:bumpVarsOf(Literals,S);
 	false -> nevermind
     end,
 
-    solver:add_watch(array:get(0,NewClause#clause.literals),NewClause,S),
-    solver:add_watch(array:get(1,NewClause#clause.literals),NewClause,S),
+    solver:add_watch(literal:negate(array:get(0,NewClause#clause.literals)),NewClause,S),
+    solver:add_watch(literal:negate(array:get(1,NewClause#clause.literals)),NewClause,S),
     {clause, ClauseID, NewClause}.
 
 pick_watch(Literals) ->
@@ -66,6 +66,17 @@ remove_false_constants(Literals) ->
 
 %% The Propogate machienary
 
-propogate(#clause{literals = Literals} = Clause, Literal, S) ->
+%% propogate(#clause{literals = Literals} = Clause, Literal, S) ->
     
+%%     EnsuredLits = case array:get(0, Literals) of
+%% 		      negate_literal(Literal) -> 
+			  
+    
+
+
+
 %% to use make_ref or not to use make-ref?
+    %% Some utilities:
+
+negate_literal(#lit{sign = OldSign} = Literal) ->
+    Literal#lit{sign = not(OldSign)}.

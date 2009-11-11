@@ -4,24 +4,27 @@
 
 %% Private Functions:
 %% search(Conflict,Solver)
-search(true,S) ->
+%% search(true,S) ->
     
 
 
-propogate(#solver{propQ = PropQ} = S) ->
-    %% Returns either no_conflict, or a conflict clause
-    case queue:is_empty(PropQ) of
-	false -> Literal = queue:out(PropQ),
-		 Watches = get_watches(Literal),
-		 process
+%% propogate(#solver{propQ = PropQ} = S) ->
+%%     %% Returns either no_conflict, or a conflict clause
+%%     case queue:is_empty(PropQ) of
+%% 	false -> Literal = queue:out(PropQ),
+%% 		 Watches = get_watches(Literal),
+%% 		 process
 	    
 
 
 %% Public Interface:
 		       
-new() ->
-    #solver{watches = ets:new(watches, []), 
-	    constraints = ets:new(constraints, []), 
+new(VarCount, ClauseCount) ->
+    #solver{watches = array:new(2*VarCount,[]),
+	    constraints = array:new(ClauseCount,[]),
+	    assignments = array:new(VarCount,[{default,undefined}]),
+	    var_dlevels = array:new(VarCount,[]),
+	    reason = array:new(VarCount,[]),
 	    propQ = queue:new()}.
 
 add_constraints(Type, ArgBundles, #solver{constraints = Constraints} = S) ->
@@ -31,25 +34,51 @@ add_constraints(Type, ArgBundles, #solver{constraints = Constraints} = S) ->
 		      ets:insert(Constraints, {ConstraintID, {Type, Constraint}}) end, 
 	      ArgBundles).
 
-add_watch(Literal, Constraint, #solver{watches = Watches} = S) ->
+S#solver{constraints = array:map(fun(ArgBundle) ->
+					 {Type, ConstraintID, Constraint} = Type:new(S, ArgBundle),
+					 
+ 
+
+
+add_watch(L, Constraint, #solver{watches = Watches} = S) ->
+    LitID = literal:id(L),
     %% need to get current value of watches:literalID
-    case ets:lookup(Watches,Literal#lit.id) of
-	[] -> ets:insert(Watches,{Literal#lit.id,[Constraint]});
-	CurrentWatches ->ets:insert(Watches,{Literal#lit.id,[Constraint|CurrentWatches]})
+    case ets:lookup(Watches,LitID) of
+	[] -> ets:insert(Watches,{LitID,[Constraint]});
+	CurrentWatches ->ets:insert(Watches,{LitID,[Constraint|CurrentWatches]})
     end.
 
-bumpClause(Clause,S) ->
+enqueue(L, FromClause, S) ->
+    case value(L, S) of
+	false -> conflict;
+	true -> true;
+	undefined -> store_fact(L, FromClause, S)
+    end.
+		
+	
+store_fact(P, FromClause, #solver{assignments = A, reason = R,
+				  decision_level = D, trail = T,
+				  propQ = Q, var_dlevels = VDs} = S) ->
+    Var = literal:variable(P),
+
+    {ok, S#solver{assignments = array:set(Var, not(literal:signed(P)), A),
+		  reason = array:set(Var, FromClause, R),
+		  decision_level = array:set(Var, D, VDs),
+		  trail = [P|T], propQ = queue:in(P, Q)}}.
+
+
+value(L, #solver{assignments = A} = S) ->
+    array:get(L#lit.variable, A).
+
+
+bumpClause(Clause, S) ->
     %% a PLACEHOLDER: none of the activity heuristic is implemented yet
     true.
 
-bumpVarsOf(Literals,S) ->
+bumpVarsOf(Literals, S) ->
     %% a PLACEHOLDER: none of the activity heuristic is implemented yet
     true.
 
 %%  21:24 < valross> mogglefrange, code:ensure_loaded(modulename)  ?
 %%  21:24 < yrashk> mogglefrange: see erl -man code
     
-
-
-
- 
