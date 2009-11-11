@@ -28,16 +28,17 @@ new(VarCount, ClauseCount) ->
 	    propQ = queue:new()}.
 
 make_constraint(Type, S, ArgBundle) ->
-    {Type, Constraint} = Type:new(S, ArgBundle),
-    Constraint.
+    %% must always return a "solver" record
+    case Type:new(S, ArgBundle) of
+	{Type, Constraint, S} -> {true, Constraint, S};
+	trivial_success -> {true, S};
+	conflict -> dear_god_no
+    end.
 
-add_constraints(Type, ArgBundles, #solver{constraints = Constraints} = S) ->
+insert_constraints(Type, ArgBundles, #solver{constraints = Constraints} = S) ->
     code:ensure_loaded(Type),
-    NewConstraints = array:map(fun(I, B) -> make_constraint(Type, S, B) end, ArgBundles),
-    S#solver{constraints = NewConstraints}.
-
-
-
+    lists:foldl(fun(B, Acc) -> make_constraint(Type, S, B) end, S, ArgBundles).
+    
 %%:make_constraint/3,
 %% S#solver{constraints = array:map(fun(ArgBundle) ->
 %% 					     {Type, Constraint} = Type:new(S, ArgBundle),
@@ -51,6 +52,10 @@ add_watch(L, Constraint, #solver{watches = Watches} = S) ->
 	[] -> ets:insert(Watches,{LitID,[Constraint]});
 	CurrentWatches -> ets:insert(Watches,{LitID,[Constraint|CurrentWatches]})
     end.
+
+add_watch(P, Constraint, #solver{watches = Watches} = S) ->
+    LitID = P#lit.id,
+    
 
 enqueue(L, FromClause, S) ->
     case value(L, S) of

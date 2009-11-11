@@ -7,5 +7,5 @@ run_solver(File) ->
     {VarCount, ClauseCount, LitLists} = cnf:parseCNF(File),
     S = solver:new(VarCount, ClauseCount),
     Clauses = [{LiteralList, false} || LiteralList <- LitLists],
-    solver:add_constraints(clause, array:from_list(Clauses), S),
+    solver:add_constraints(clause, Clauses, S),
     S.

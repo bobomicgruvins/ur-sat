@@ -4,22 +4,20 @@
 						
 new(S, {Literals, false}) ->
     case normalize(Literals) of
-	trivial_success -> trivial_success;
-	{literals, NormalizedLiterals} -> insert_clause(NormalizedLiterals, false, S);
-	[] -> lolwut
+	trivial_success -> S;
+	{literals, NormalizedLiterals} -> insert_clause(NormalizedLiterals, false, S)
     end;
 new(S, {Literals, true}) ->
     ReOrderedLits = pick_watch(Literals),
-    %% use a heuristic to pick a second literal to watch
+    %% pick the literal with the highest decision level
     insert_clause(ReOrderedLits, true, S).
 
-insert_clause(Literals, Learnt, S) when length(Literals) == 0 ->
-    conflict;
-insert_clause(Literals, Learnt, S) when length(Literals) == 1 ->
-    solver:enqueue(lists:nth(0,Literals),S);
+insert_clause(Literals, _, S) when length(Literals) == 0 ->
+    {conflict, S};
+insert_clause(Literals, _, S) when length(Literals) == 1 ->
+    {trivial_success, solver:enqueue(lists:nth(0,Literals),S)};
 insert_clause(Literals, Learnt, S) ->
     ClauseID = make_ref(),
-    %%    TaggedLiterals = lists:map(fun(L) -> L#lit{id=make_ref(),clause=ClauseID} end, Literals), 
     NewClause = #clause{id = ClauseID, literals = array:from_list(Literals)},
 
     case Learnt of 
@@ -28,14 +26,12 @@ insert_clause(Literals, Learnt, S) ->
 	false -> nevermind
     end,
 
-    solver:add_watch(literal:negate(array:get(0,NewClause#clause.literals)),NewClause,S),
-    solver:add_watch(literal:negate(array:get(1,NewClause#clause.literals)),NewClause,S),
-    {clause, NewClause}.
+    FirstTwoLits = lists:sublist(Literals, 2),    
+    NewS = lists:foldl(fun(X, Acc) -> solver:add_watch(literal:negate(X), NewClause) end, FirstTwoLits),
+    
+    {solver, solver:add_constraint(NewClause, NewS)}.
 
 pick_watch(Literals) ->
-    %% return a re-ordering of literals according to some heuristic.
-    %% TODO: obviously, we don't do much here right now. implement
-    %% this later
     Literals.
 
 normalize(Literals) ->
@@ -48,9 +44,6 @@ remove_dupes(Literals) ->
     %%the "set" datatype doesn't allow duplicates
     sets:to_list(sets:from_list(Literals)).
 
-
-
-
 %% The Propogate machienary
 
 %% propogate(#clause{literals = Literals} = Clause, Literal, S) ->
@@ -58,12 +51,5 @@ remove_dupes(Literals) ->
 %%     EnsuredLits = case array:get(0, Literals) of
 %% 		      negate_literal(Literal) -> 
 			  
-    
-
-
-
 %% to use make_ref or not to use make-ref?
-    %% Some utilities:
-
-negate_literal(#lit{sign = OldSign} = Literal) ->
-    Literal#lit{sign = not(OldSign)}.
+%% Some utilities:
