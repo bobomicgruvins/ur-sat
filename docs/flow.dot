@@ -1,0 +1,17 @@
+digraph hello {
+
+search [label="Search"]
+propogate [label="Propogate"]
+process_watches[label="process_watches"]
+propogate_walk[label="proprgate_walk"]
+
+search->propogate [label="S", fontcolor=blue]
+search->propogate [label="{conflict, S}||{ok,S}", dir=back, fontcolor=red]
+propogate->process_watches[label="not empty queue" fontcolor=blue]
+propogate->process_watches[label="{ok, S}", dir=back, fontcolor=red]
+propogate->process_watches[label="{conflict, ConflictClause, S}", dir=back, fontcolor=red]
+process_watches-> propogate_walk
+process_watches->propogate_walk[label="{P, S', ok, []}", dir=back, fontcolor=red]
+process_watches->propogate_walk[label="{P, S', ConflictClause, [...]}", dir=back, fontcolor=red]
+
+}
