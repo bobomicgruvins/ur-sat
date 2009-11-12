@@ -92,12 +92,13 @@ propogate(#solver{propQueue=Q}=S)->                                             
  			process_watches(P,S#solver{propQ=NewPQ})
 	end.
 
-
-process_watches(P, S)->					%% this returns a tuple {P, S', ConflictClause, [...]}, if the solver enters a conflict state, where P is the literal being propogated, 
-Watches=Watchlist(P,S),
-foldl(fun propogate_walk/2, Watches, {P,S,[]}).
-
-
+  
+process_watches(P, S)->			        %% propogate_walk returns a tuple {P, S', ConflictClause, [...]}, if the solver enters a conflict state, where
+Watches=Watchlist(P,S),                         %%  the literal being propogated, Sprime is th esolver at the point where the conflict occured
+foldl(fun propogate_walk/2, Watches, {P,S,[]}). %% and [...] is the half propogated list with the conflict clause removed.
+						%% if there is no conflict propogate walk returns {P, S', ok, []}
+						%% if propogate_walk had a conflict then processes_watches returns, {conflict, ConflictClause, S}
+						%% if it didn't process_watches returns {ok, S}
 
 propogate_walk(W, {P, S, ok, []})->
 	case clause:propogate(P,W,S) of

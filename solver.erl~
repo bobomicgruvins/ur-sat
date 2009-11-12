@@ -91,9 +91,13 @@ propogate(#solver{propQueue=Q}=S)->                                             
 		false->{{value, P}, NewPQ}=queue:out(Q),			%% if the queue is not empty return processes_watches(p, ...)
  			process_watches(P,S#solver{propQ=NewPQ})
 	end.
-process_watches(P, S)->
+
+
+process_watches(P, S)->					%% this returns a tuple {P, S', ConflictClause, [...]}, if the solver enters a conflict state, where P is the literal being propogated, 
 Watches=Watchlist(P,S),
 foldl(fun propogate_walk/2, Watches, {P,S,[]}).
+
+
 
 propogate_walk(W, {P, S, ok, []})->
 	case clause:propogate(P,W,S) of
