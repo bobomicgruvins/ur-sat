@@ -95,7 +95,7 @@ process_watches(P, S)->
 Watches=Watchlist(P,S),
 foldl(fun propogate_walk/2, Watches, {P,S,[]}).
 
-Propogate_walk(W, {P, S, ok, []})->
+propogate_walk(W, {P, S, ok, []})->
 	case clause:propogate(P,W,S) of
 		{conflict, S_prime, ConflictClause} -> {P, S_prime, [ConflictClause]};
 		{ok, S_prime}-> {P, S_prime, []}

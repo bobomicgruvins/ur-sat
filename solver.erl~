@@ -91,7 +91,18 @@ propogate(#solver{propQueue=Q}=S)->                                             
 		false->{{value, P}, NewPQ}=queue:out(Q),			%% if the queue is not empty return processes_watches(p, ...)
  			process_watches(P,S#solver{propQ=NewPQ})
 	end.
+process_watches(P, S)->
+Watches=Watchlist(P,S),
+foldl(fun propogate_walk/2, Watches, {P,S,[]}).
 
+propogate_walk(W, {P, S, ok, []})->
+	case clause:propogate(P,W,S) of
+		{conflict, S_prime, ConflictClause} -> {P, S_prime, [ConflictClause]};
+		{ok, S_prime}-> {P, S_prime, []}
+	end.
+
+Propogate_walk(W, {P,S, ConflictClause, LeftOverWatches})
+{P, S, ConflictClause, [W | LeftOverWatches]}.
 
 
 bumpClause(Clause, S) ->
