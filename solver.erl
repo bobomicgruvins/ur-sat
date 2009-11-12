@@ -101,7 +101,7 @@ propogate_walk(W, {P, S, ok, []})->
 		{ok, S_prime}-> {P, S_prime, []}
 	end.
 
-Propogate_walk(W, {P,S, ConflictClause, LeftOverWatches})
+Propogate_walk(W, {P,S, ConflictClause, LeftOverWatches})->
 {P, S, ConflictClause, [W | LeftOverWatches]}.
 
 
