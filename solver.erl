@@ -71,7 +71,7 @@ enqueue(L, FromClause, S) ->
 		
 	
 store_fact(P, FromClause, #solver{assignments = A, reason = R,      %%returns an updated solver object where we have enqued an inplyed varible for propagation. 
-				  current_dlevel = D, trail = T,    %% we return a solver object with P added to the que in the solver record. 
+				  current_dlevel = D, trail = T,    %% we return a solver object with P added to the queue in the solver record. 
 				  propQ = Q, var_dlevel = VDs} = S) ->
     Var = literal:variable(P),
 
@@ -81,17 +81,28 @@ store_fact(P, FromClause, #solver{assignments = A, reason = R,      %%returns an
 		  trail = [P|T], propQ = queue:in(P, Q)}.
 
 
-value(L, #solver{assignments = A} = S) ->     %% returns the valaue of a literal repersented by a varible. 
+value(L, #solver{assignments = A} = S) ->       %% returns the valaue of a literal repersented by a varible. 
     array:get(L#lit.variable, A).		%% in other wrords, true, false or undefined.
 
 
-propogate(#solver{propQueue=Q}=S)->                                           %% this is unit propgation, process_watches need to be written.
+propogate(#solver{propQueue=Q}=S)->                                             %% this is unit propgation, process_watches need to be written.
 	case queue:is_empty(Q) of
 		true->{ok, S};							%% if queue is empty return the solver object
 		false->{{value, P}, NewPQ}=queue:out(Q),			%% if the queue is not empty return processes_watches(p, ...)
  			process_watches(P,S#solver{propQ=NewPQ})
 	end.
+process_watches(P, S)->
+Watches=Watchlist(P,S),
+foldl(fun propogate_walk/2, Watches, {P,S,[]}).
 
+Propogate_walk(W, {P, S, ok, []})->
+	case clause:propogate(P,W,S) of
+		{conflict, S_prime, ConflictClause} -> {P, S_prime, [ConflictClause]};
+		{ok, S_prime}-> {P, S_prime, []}
+	end.
+
+Propogate_walk(W, {P,S, ConflictClause, LeftOverWatches})
+{P, S, ConflictClause, [W | LeftOverWatches]}.
 
 
 bumpClause(Clause, S) ->
